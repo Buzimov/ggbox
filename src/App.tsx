@@ -1031,8 +1031,8 @@ function ToonhubHero() {
           </a>
           {!activeUser ? (
             <div
-              className="flex h-11 items-center gap-3 text-[10px] font-black uppercase text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.26)] sm:gap-4"
-              style={{ letterSpacing: '0.12em' }}
+              className="flex h-11 items-center gap-3 text-xs font-semibold uppercase text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.26)] sm:gap-4"
+              style={{ letterSpacing: '0.18em' }}
             >
               <a href="/login" className="text-white no-underline transition-opacity hover:opacity-78">
                 Log In
@@ -1070,12 +1070,6 @@ function ToonhubHero() {
           className="absolute bottom-6 left-4 w-[calc(100vw-2rem)] max-w-[390px] text-left sm:bottom-20 sm:left-24 sm:w-[420px] sm:max-w-[420px]"
           style={{ zIndex: 60 }}
         >
-          <p
-            className="mb-5 text-[22px] font-bold text-white sm:mb-6 sm:text-[30px]"
-            style={{ opacity: 0.96, letterSpacing: '0', lineHeight: 1.04 }}
-          >
-            {renderEditableText('headline', '', { letterSpacing: '0', lineHeight: 1.04 })}
-          </p>
           <div className="mb-5 flex max-w-[360px] flex-wrap gap-2 sm:mb-6 sm:max-w-[420px]">
             {CATEGORIES.map((category) => {
               const Icon = category.icon;
@@ -3272,101 +3266,6 @@ function MomentsCarouselSection() {
         </div>
 
         <PublishedMomentCardsStrip trackRef={readyClipCount > 0 ? trackRef : undefined} />
-        {readyClipCount === 0 ? (
-          <div
-            ref={trackRef}
-            className="moments-scroll -mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-5 sm:-mx-8 sm:gap-6 sm:px-8"
-          >
-          {MOMENTS.map((moment) => (
-            <a
-              key={moment.id}
-              href={`/market/moment/${encodeURIComponent(moment.marketMomentId)}`}
-              className="group relative h-[560px] min-w-[300px] snap-start overflow-hidden border bg-black text-white no-underline shadow-[0_28px_90px_rgba(0,0,0,0.4)] transition-[border-color,transform] hover:-translate-y-1 sm:h-[620px] sm:min-w-[390px]"
-              aria-current={MOMENTS[activeMomentIndex].id === moment.id ? 'true' : undefined}
-              style={{
-                borderColor: `${moment.accent}66`,
-                borderRadius: 8,
-                background: `linear-gradient(180deg, #050505 0%, ${moment.panel} 100%)`,
-              }}
-            >
-              <div className="relative h-[54%] border-b border-white/10">
-                <MomentPreview moment={moment} />
-              </div>
-
-              <div className="relative flex h-[46%] flex-col px-5 py-5">
-                <div
-                  className="pointer-events-none absolute inset-x-0 top-0 h-px opacity-80"
-                  style={{
-                    background: `linear-gradient(90deg, transparent, ${moment.accent}, transparent)`,
-                  }}
-                />
-                <div className="mb-4 flex min-h-9 items-center justify-between gap-2">
-                  <div className="flex min-w-0 items-center gap-2">
-                    {moment.rarity === 'Legendary' ? (
-                      <span
-                        className="inline-flex h-8 items-center border bg-black/35 px-3 text-[11px] font-semibold uppercase"
-                        style={{
-                          borderColor: `${moment.accent}66`,
-                          color: moment.accent,
-                          borderRadius: 999,
-                          letterSpacing: '0.14em',
-                        }}
-                      >
-                        Legendary
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span
-                      className="inline-flex h-8 items-center border bg-black/25 px-3 text-[11px] font-semibold uppercase"
-                      style={{
-                        borderColor: `${moment.accent}45`,
-                        color: moment.accent,
-                        borderRadius: 999,
-                        letterSpacing: '0.14em',
-                      }}
-                    >
-                      {moment.serial}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div
-                    className="flex h-14 min-w-0 flex-1 items-center gap-3 border bg-black/32 px-3"
-                    style={{
-                      borderColor: `${moment.accent}55`,
-                      borderRadius: 6,
-                      boxShadow: `inset 0 0 24px ${moment.accent}12`,
-                    }}
-                  >
-                    <img
-                      src={moment.avatar}
-                      alt=""
-                      className="h-10 w-10 shrink-0 rounded-full object-cover object-top"
-                      draggable={false}
-                    />
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-extrabold uppercase text-white">{moment.creator}</div>
-                      <div className="truncate text-[11px] font-semibold text-white/45">{moment.handle}</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  className="mb-3 inline-flex border px-3 py-1.5 text-[11px] font-semibold uppercase"
-                  style={{ borderColor: `${moment.accent}66`, color: moment.accent, borderRadius: 999, letterSpacing: '0.14em' }}
-                >
-                  {moment.category}
-                </div>
-                <h3 className="moment-clamp-2 max-w-[94%] text-xl font-extrabold leading-tight text-white sm:text-2xl">
-                  {moment.title}
-                </h3>
-              </div>
-            </a>
-          ))}
-          </div>
-        ) : null}
       </div>
     </section>
   );
