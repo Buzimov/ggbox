@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="GGBOX is a creator moments marketplace where collectors buy packs, open drops, build a locker, trade moments, and share creator highlights."
+    />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#03060a" />
+    <link rel="canonical" href="https://ggbox.netlify.app/" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Crect width='96' height='96' rx='18' fill='%2303060a'/%3E%3Cpath d='M25 28h46v15H51v8h16v17H25V28Zm18 15v17h9v-7H43v-8h14v-2H43Z' fill='%2354b9ff'/%3E%3C/svg%3E"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="GGBOX Creator Moments" />
+    <meta
+      property="og:description"
+      content="Buy creator packs, reveal moments, manage a collector locker, trade listings, and share GGBOX pulls."
+    />
+    <meta property="og:url" content="https://ggbox.netlify.app/" />
+    <meta property="og:image" content="https://ggbox.netlify.app/assets/drop-pack-minecraft.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GGBOX Creator Moments" />
+    <meta
+      name="twitter:description"
+      content="A creator moments marketplace with packs, collectible highlights, public lockers, and creator economy pages."
+    />
+    <meta name="twitter:image" content="https://ggbox.netlify.app/assets/drop-pack-minecraft.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <title>GGBOX Creator Moments</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://ggbox.netlify.app/#organization",
+            "name": "GGBOX",
+            "url": "https://ggbox.netlify.app/",
+            "logo": "https://ggbox.netlify.app/assets/drop-pack-minecraft.png"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://ggbox.netlify.app/#website",
+            "name": "GGBOX Creator Moments",
+            "url": "https://ggbox.netlify.app/",
+            "publisher": {
+              "@id": "https://ggbox.netlify.app/#organization"
+            }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "GGBOX",
+            "applicationCategory": "EntertainmentApplication",
+            "operatingSystem": "Web",
+            "description": "Creator moments marketplace for packs, collector lockers, trading, and public creator profiles.",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #050506;
+}
+
+.moments-scroll {
+  scrollbar-width: none;
+}
+
+.moments-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.moment-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.launch-panel {
+  border: 1px solid rgba(255, 255, 255, 0.075) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018) 58%, rgba(84, 185, 255, 0.045)),
+    rgba(0, 0, 0, 0.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055), 0 22px 70px rgba(0, 0, 0, 0.18) !important;
+  backdrop-filter: blur(12px);
+}
+
+.launch-panel-quiet {
+  border: 1px solid rgba(255, 255, 255, 0.055) !important;
+  background: rgba(255, 255, 255, 0.032) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.launch-tile {
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+}
+
+.launch-field {
+  border: 1px solid rgba(255, 255, 255, 0.095) !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+}
+
+.launch-chip {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(0, 0, 0, 0.32) !important;
+  backdrop-filter: blur(10px);
+}
+
+.locker-ambient {
+  background:
+    radial-gradient(ellipse at 18% 18%, rgba(84, 185, 255, 0.16), transparent 34%),
+    radial-gradient(ellipse at 82% 14%, rgba(140, 255, 47, 0.09), transparent 28%),
+    radial-gradient(ellipse at 72% 68%, rgba(49, 94, 255, 0.12), transparent 36%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 42%);
+  opacity: 0.95;
+  mask-image: linear-gradient(to bottom, black, black 78%, transparent);
+}
+
+.locker-ambient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.18) 0 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.045;
+}
+
+.moment-reel {
+  animation: moment-pan 7.5s linear infinite;
+  animation-play-state: paused;
+  background-size: 170% 170%;
+}
+
+.group:hover .moment-reel {
+  animation-play-state: running;
+}
+
+.moment-scan {
+  animation: moment-scan 1.15s linear infinite;
+  animation-play-state: paused;
+  background-size: 220% 100%, 100% 13px;
+}
+
+.group:hover .moment-scan {
+  animation-play-state: running;
+}
+
+@keyframes moment-pan {
+  0% {
+    transform: translate3d(-4%, -2%, 0) scale(1.04);
+    background-position: 0% 50%;
+  }
+  50% {
+    transform: translate3d(4%, 2%, 0) scale(1.12);
+    background-position: 100% 50%;
+  }
+  100% {
+    transform: translate3d(-4%, -2%, 0) scale(1.04);
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes moment-scan {
+  from {
+    background-position: -130% 0, 0 0;
+  }
+  to {
+    background-position: 130% 0, 0 13px;
+  }
+}
+
+@keyframes moment-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.94) rotateX(8deg);
+    filter: saturate(0.65) brightness(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1) rotateX(0deg);
+    filter: saturate(1) brightness(1);
+  }
+}

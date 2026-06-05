@@ -1,0 +1,10 @@
+{
+  "name": "GGBOX Creator Moments",
+  "short_name": "GGBOX",
+  "description": "Creator moments marketplace with packs, collector lockers, trading, and public profiles.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#03060a",
+  "theme_color": "#03060a",
+  "icons": []
+}
