@@ -39,8 +39,9 @@ import {
   VolumeX,
   Wallet,
 } from 'lucide-react';
-import { CreatorMomentImporterApp } from './CreatorMomentImporterAdmin';
+import { CreatorMomentImporterApp, PublishedMomentCardsStrip } from './CreatorMomentImporterAdmin';
 import { getPublishedMomentCards, type MomentCard as PublishedMomentCardData } from './creatorMomentImporter';
+import { findReadyInvestorClips } from './readyClipImporter';
 import { trackEvent } from './analytics';
 import {
   addActivity,
@@ -538,7 +539,6 @@ const MOMENTS: Moment[] = [
     scene:
       'radial-gradient(circle at 22% 18%, rgba(86,183,255,0.95), transparent 20%), radial-gradient(circle at 70% 36%, rgba(255,69,108,0.75), transparent 24%), linear-gradient(135deg, #030713 0%, #0c1e4c 48%, #301044 100%)',
     frame: 'linear-gradient(135deg, rgba(86,183,255,0.98), rgba(255,70,120,0.72))',
-    videoSrc: '/demo-vods/5.mp4',
   },
   {
     id: 'cs2-clutch',
@@ -555,7 +555,6 @@ const MOMENTS: Moment[] = [
     scene:
       'radial-gradient(circle at 62% 24%, rgba(43,220,255,0.88), transparent 22%), radial-gradient(circle at 24% 72%, rgba(31,92,255,0.74), transparent 25%), linear-gradient(135deg, #010913 0%, #06233a 52%, #02060d 100%)',
     frame: 'linear-gradient(135deg, rgba(43,220,255,0.95), rgba(48,95,255,0.8))',
-    videoSrc: '/demo-vods/3.mp4',
   },
   {
     id: 'irl-night-market',
@@ -572,7 +571,6 @@ const MOMENTS: Moment[] = [
     scene:
       'radial-gradient(circle at 28% 28%, rgba(140,255,47,0.85), transparent 20%), radial-gradient(circle at 76% 60%, rgba(255,225,81,0.68), transparent 24%), linear-gradient(135deg, #031108 0%, #173814 48%, #050904 100%)',
     frame: 'linear-gradient(135deg, rgba(140,255,47,0.95), rgba(255,221,74,0.78))',
-    videoSrc: '/demo-vods/1.mp4',
   },
   {
     id: 'dota-rampage',
@@ -590,7 +588,6 @@ const MOMENTS: Moment[] = [
     scene:
       'radial-gradient(circle at 50% 36%, rgba(255,107,26,0.92), transparent 24%), radial-gradient(circle at 22% 72%, rgba(255,202,74,0.64), transparent 24%), linear-gradient(135deg, #120401 0%, #3b1002 50%, #090201 100%)',
     frame: 'linear-gradient(135deg, rgba(255,107,26,0.98), rgba(255,198,82,0.72))',
-    videoSrc: '/demo-vods/4.mp4',
   },
   {
     id: 'minecraft-mega-build',
@@ -607,7 +604,6 @@ const MOMENTS: Moment[] = [
     scene:
       'radial-gradient(circle at 30% 34%, rgba(50,223,255,0.86), transparent 22%), radial-gradient(circle at 78% 66%, rgba(79,255,189,0.58), transparent 23%), linear-gradient(135deg, #021013 0%, #073345 50%, #020607 100%)',
     frame: 'linear-gradient(135deg, rgba(50,223,255,0.95), rgba(82,255,190,0.7))',
-    videoSrc: '/demo-vods/3.mp4',
   },
   {
     id: 'dj-drop',
@@ -624,7 +620,6 @@ const MOMENTS: Moment[] = [
     scene:
       'radial-gradient(circle at 26% 28%, rgba(255,122,184,0.9), transparent 22%), radial-gradient(circle at 70% 62%, rgba(93,66,214,0.82), transparent 26%), linear-gradient(135deg, #120511 0%, #35103d 48%, #09030c 100%)',
     frame: 'linear-gradient(135deg, rgba(255,122,184,0.95), rgba(118,83,255,0.75))',
-    videoSrc: '/demo-vods/2.mp4',
   },
 ];
 
@@ -966,26 +961,26 @@ function ToonhubHero() {
           className="absolute inset-x-0 flex items-center justify-center pointer-events-none select-none"
           style={{
             zIndex: 2,
-            top: isMobile ? '18%' : '12%',
+            top: '18%',
             fontFamily: "'Anton', sans-serif",
-            fontSize: isMobile ? 'clamp(68px, 20vw, 84px)' : 'clamp(112px, 22vw, 300px)',
+            fontSize: isMobile ? 'clamp(74px, 21vw, 88px)' : 'clamp(90px, 28vw, 380px)',
             fontWeight: 900,
             color: 'white',
-            opacity: 0.92,
+            opacity: 1,
             lineHeight: 1,
             textTransform: 'uppercase',
-            letterSpacing: '0',
+            letterSpacing: '-0.02em',
             whiteSpace: 'nowrap',
             pointerEvents: editMode ? 'auto' : 'none',
           }}
         >
           {renderEditableText('ghost', '', {
             fontFamily: "'Anton', sans-serif",
-            fontSize: isMobile ? 'clamp(68px, 20vw, 84px)' : 'clamp(112px, 22vw, 300px)',
+            fontSize: isMobile ? 'clamp(74px, 21vw, 88px)' : 'clamp(90px, 28vw, 380px)',
             fontWeight: 900,
             lineHeight: 1,
             textTransform: 'uppercase',
-            letterSpacing: '0',
+            letterSpacing: '-0.02em',
             whiteSpace: 'nowrap',
           })}
         </div>
@@ -1027,12 +1022,27 @@ function ToonhubHero() {
 
           <a
             href={activeUser ? '/account' : '/login'}
-            className="flex h-11 items-center gap-2 px-1 text-[10px] font-black uppercase text-white no-underline drop-shadow-[0_2px_12px_rgba(0,0,0,0.26)] transition-opacity hover:opacity-78"
+            className={`h-11 items-center gap-2 px-1 text-[10px] font-black uppercase text-white no-underline drop-shadow-[0_2px_12px_rgba(0,0,0,0.26)] transition-opacity hover:opacity-78 ${
+              activeUser ? 'flex' : 'hidden'
+            }`}
             style={{ letterSpacing: '0.12em' }}
           >
             {activeUser ? <img src={activeUser.avatar} alt="Account" className="h-8 w-8 rounded-full object-cover" /> : <UserCircle size={17} />}
-            {!activeUser ? <span className="hidden sm:inline">Sign In</span> : null}
           </a>
+          {!activeUser ? (
+            <div
+              className="flex h-11 items-center gap-3 text-[10px] font-black uppercase text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.26)] sm:gap-4"
+              style={{ letterSpacing: '0.12em' }}
+            >
+              <a href="/login" className="text-white no-underline transition-opacity hover:opacity-78">
+                Log In
+              </a>
+              <span className="text-white/45">/</span>
+              <a href="/register" className="text-white no-underline transition-opacity hover:opacity-78">
+                Sign Up
+              </a>
+            </div>
+          ) : null}
         </header>
 
         <div className="absolute inset-0" style={{ zIndex: 3 }}>
@@ -1057,11 +1067,11 @@ function ToonhubHero() {
         </div>
 
         <div
-          className="absolute bottom-6 left-4 w-[calc(100vw-2rem)] max-w-[390px] text-left sm:bottom-20 sm:left-24 sm:w-[460px] sm:max-w-[460px]"
-          style={{ zIndex: 70 }}
+          className="absolute bottom-6 left-4 w-[calc(100vw-2rem)] max-w-[390px] text-left sm:bottom-20 sm:left-24 sm:w-[420px] sm:max-w-[420px]"
+          style={{ zIndex: 60 }}
         >
           <p
-            className="mb-5 text-[28px] font-black uppercase text-white drop-shadow-[0_8px_28px_rgba(0,0,0,0.22)] sm:mb-6 sm:text-[44px]"
+            className="mb-5 text-[22px] font-bold text-white sm:mb-6 sm:text-[30px]"
             style={{ opacity: 0.96, letterSpacing: '0', lineHeight: 1.04 }}
           >
             {renderEditableText('headline', '', { letterSpacing: '0', lineHeight: 1.04 })}
@@ -1660,14 +1670,6 @@ function MarketHeader({ active = 'market' }: { active?: 'drops' | 'market' | 'ac
           }`}
         >
           Market
-        </a>
-        <a
-          href="/account"
-          className={`absolute left-full top-1/2 ml-8 -translate-y-1/2 leading-none no-underline transition-colors after:absolute after:-bottom-2 after:left-0 after:h-0.5 after:w-0 after:bg-white after:transition-[width] hover:text-white hover:after:w-full sm:ml-11 ${
-            active === 'account' ? 'text-white' : 'text-white/72'
-          }`}
-        >
-          Account
         </a>
       </nav>
       <a
@@ -3090,25 +3092,8 @@ function MomentPreview({ moment }: { moment: Moment }) {
           filter: 'saturate(1.24) contrast(1.08)',
         }}
       />
-      {moment.videoSrc ? (
-        <video
-          className="absolute inset-0 h-full w-full object-cover opacity-90 transition-[opacity,filter,transform] duration-300 group-hover:scale-[1.015] group-hover:opacity-100"
-          src={moment.videoSrc}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          onMouseEnter={(event) => {
-            event.currentTarget.play().catch(() => undefined);
-          }}
-          onMouseLeave={(event) => {
-            event.currentTarget.pause();
-            event.currentTarget.currentTime = 0;
-          }}
-        />
-      ) : null}
       <div
-        className="moment-scan pointer-events-none absolute inset-0 opacity-0 mix-blend-screen transition-opacity duration-300 group-hover:opacity-50"
+        className="moment-scan absolute inset-0 opacity-0 mix-blend-screen transition-opacity duration-300 group-hover:opacity-70"
         style={{
           background:
             'linear-gradient(90deg, transparent 0 42%, rgba(255,255,255,0.68) 48%, transparent 56%), repeating-linear-gradient(0deg, transparent 0 12px, rgba(255,255,255,0.12) 12px 13px)',
@@ -3126,12 +3111,12 @@ function MomentPreview({ moment }: { moment: Moment }) {
         className="absolute bottom-7 right-7 h-32 w-32 border opacity-60 transition-transform duration-500 group-hover:-translate-x-5 group-hover:-translate-y-3"
         style={{ borderColor: moment.accent, borderRadius: 12 }}
       />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/45 to-transparent" />
-      <div className="pointer-events-none absolute left-5 top-5 flex items-center gap-2 rounded-full border border-white/18 bg-black/35 px-3 py-1.5 text-[11px] font-black uppercase text-white backdrop-blur">
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/45 to-transparent" />
+      <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-white/18 bg-black/35 px-3 py-1.5 text-[11px] font-black uppercase text-white backdrop-blur">
         <Radio size={13} strokeWidth={2.4} style={{ color: moment.accent }} />
         <span style={{ letterSpacing: '0.12em' }}>{moment.duration}</span>
       </div>
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center">
         <div
           className="flex h-16 w-16 items-center justify-center border bg-black/36 text-white opacity-0 backdrop-blur transition-all duration-300 group-hover:scale-100 group-hover:opacity-100"
           style={{ borderColor: `${moment.accent}cc`, borderRadius: 999, boxShadow: `0 0 42px ${moment.accent}66` }}
@@ -3139,6 +3124,17 @@ function MomentPreview({ moment }: { moment: Moment }) {
           <Play size={25} fill="currentColor" strokeWidth={0} />
         </div>
       </div>
+      {moment.videoSrc ? (
+        <video
+          className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          src={moment.videoSrc}
+          muted
+          loop
+          playsInline
+          autoPlay
+          preload="metadata"
+        />
+      ) : null}
     </div>
   );
 }
@@ -3147,6 +3143,20 @@ function MomentsCarouselSection() {
   const trackRef = useRef<HTMLDivElement>(null);
   const activeMomentPageRef = useRef(0);
   const [activeMomentIndex, setActiveMomentIndex] = useState(0);
+  const [readyClipCount, setReadyClipCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    findReadyInvestorClips().then((clips) => {
+      if (!cancelled) {
+        setReadyClipCount(clips.length);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const getMomentPages = () => {
     const track = trackRef.current ?? (document.querySelector('#moments .moments-scroll') as HTMLDivElement | null);
@@ -3261,10 +3271,12 @@ function MomentsCarouselSection() {
           </div>
         </div>
 
-        <div
-          ref={trackRef}
-          className="moments-scroll -mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-5 sm:-mx-8 sm:gap-6 sm:px-8"
-        >
+        <PublishedMomentCardsStrip trackRef={readyClipCount > 0 ? trackRef : undefined} />
+        {readyClipCount === 0 ? (
+          <div
+            ref={trackRef}
+            className="moments-scroll -mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-5 sm:-mx-8 sm:gap-6 sm:px-8"
+          >
           {MOMENTS.map((moment) => (
             <a
               key={moment.id}
@@ -3353,7 +3365,8 @@ function MomentsCarouselSection() {
               </div>
             </a>
           ))}
-        </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );
