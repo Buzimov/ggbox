@@ -39,9 +39,8 @@ import {
   VolumeX,
   Wallet,
 } from 'lucide-react';
-import { CreatorMomentImporterApp, PublishedMomentCardsStrip } from './CreatorMomentImporterAdmin';
+import { CreatorMomentImporterApp } from './CreatorMomentImporterAdmin';
 import { getPublishedMomentCards, type MomentCard as PublishedMomentCardData } from './creatorMomentImporter';
-import { findReadyInvestorClips } from './readyClipImporter';
 import { trackEvent } from './analytics';
 import {
   addActivity,
@@ -961,26 +960,26 @@ function ToonhubHero() {
           className="absolute inset-x-0 flex items-center justify-center pointer-events-none select-none"
           style={{
             zIndex: 2,
-            top: '18%',
+            top: isMobile ? '18%' : '12%',
             fontFamily: "'Anton', sans-serif",
-            fontSize: isMobile ? 'clamp(74px, 21vw, 88px)' : 'clamp(90px, 28vw, 380px)',
+            fontSize: isMobile ? 'clamp(68px, 20vw, 84px)' : 'clamp(112px, 22vw, 300px)',
             fontWeight: 900,
             color: 'white',
-            opacity: 1,
+            opacity: 0.92,
             lineHeight: 1,
             textTransform: 'uppercase',
-            letterSpacing: '-0.02em',
+            letterSpacing: '0',
             whiteSpace: 'nowrap',
             pointerEvents: editMode ? 'auto' : 'none',
           }}
         >
           {renderEditableText('ghost', '', {
             fontFamily: "'Anton', sans-serif",
-            fontSize: isMobile ? 'clamp(74px, 21vw, 88px)' : 'clamp(90px, 28vw, 380px)',
+            fontSize: isMobile ? 'clamp(68px, 20vw, 84px)' : 'clamp(112px, 22vw, 300px)',
             fontWeight: 900,
             lineHeight: 1,
             textTransform: 'uppercase',
-            letterSpacing: '-0.02em',
+            letterSpacing: '0',
             whiteSpace: 'nowrap',
           })}
         </div>
@@ -1052,11 +1051,11 @@ function ToonhubHero() {
         </div>
 
         <div
-          className="absolute bottom-6 left-4 w-[calc(100vw-2rem)] max-w-[390px] text-left sm:bottom-20 sm:left-24 sm:w-[420px] sm:max-w-[420px]"
-          style={{ zIndex: 60 }}
+          className="absolute bottom-6 left-4 w-[calc(100vw-2rem)] max-w-[390px] text-left sm:bottom-20 sm:left-24 sm:w-[460px] sm:max-w-[460px]"
+          style={{ zIndex: 70 }}
         >
           <p
-            className="mb-5 text-[22px] font-bold text-white sm:mb-6 sm:text-[30px]"
+            className="mb-5 text-[28px] font-black uppercase text-white drop-shadow-[0_8px_28px_rgba(0,0,0,0.22)] sm:mb-6 sm:text-[44px]"
             style={{ opacity: 0.96, letterSpacing: '0', lineHeight: 1.04 }}
           >
             {renderEditableText('headline', '', { letterSpacing: '0', lineHeight: 1.04 })}
@@ -1534,7 +1533,7 @@ function getRedirectTarget(fallback = '/account') {
   const params = new URLSearchParams(window.location.search);
   const redirect = params.get('redirect');
 
-  if (!redirect || redirect.startsWith('/login') || redirect.startsWith('/register')) {
+  if (!redirect || redirect.startsWith('/login') || redirect.startsWith('/register') || redirect.startsWith('/forgot-password')) {
     return fallback;
   }
 
@@ -3136,20 +3135,6 @@ function MomentsCarouselSection() {
   const trackRef = useRef<HTMLDivElement>(null);
   const activeMomentPageRef = useRef(0);
   const [activeMomentIndex, setActiveMomentIndex] = useState(0);
-  const [readyClipCount, setReadyClipCount] = useState(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    findReadyInvestorClips().then((clips) => {
-      if (!cancelled) {
-        setReadyClipCount(clips.length);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const getMomentPages = () => {
     const track = trackRef.current ?? (document.querySelector('#moments .moments-scroll') as HTMLDivElement | null);
@@ -3264,12 +3249,10 @@ function MomentsCarouselSection() {
           </div>
         </div>
 
-        <PublishedMomentCardsStrip trackRef={readyClipCount > 0 ? trackRef : undefined} />
-        {readyClipCount === 0 ? (
-          <div
-            ref={trackRef}
-            className="moments-scroll -mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-5 sm:-mx-8 sm:gap-6 sm:px-8"
-          >
+        <div
+          ref={trackRef}
+          className="moments-scroll -mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-5 sm:-mx-8 sm:gap-6 sm:px-8"
+        >
           {MOMENTS.map((moment) => (
             <a
               key={moment.id}
@@ -3358,14 +3341,13 @@ function MomentsCarouselSection() {
               </div>
             </a>
           ))}
-          </div>
-        ) : null}
+        </div>
       </div>
     </section>
   );
 }
 
-type AuthMode = 'login' | 'register';
+type AuthMode = 'login' | 'register' | 'forgot';
 
 type AuthErrors = {
   name?: string;
@@ -3395,12 +3377,14 @@ function DiscordMark() {
 
 function AuthPage({ mode }: { mode: AuthMode }) {
   const isRegister = mode === 'register';
+  const isForgot = mode === 'forgot';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<AuthErrors>({});
+  const [notice, setNotice] = useState('');
 
   const validate = () => {
     const nextErrors: AuthErrors = {};
@@ -3413,7 +3397,7 @@ function AuthPage({ mode }: { mode: AuthMode }) {
       nextErrors.email = 'Enter a valid email.';
     }
 
-    if (password.length < 6) {
+    if (!isForgot && password.length < 6) {
       nextErrors.password = 'Password must be at least 6 characters.';
     }
 
@@ -3427,6 +3411,7 @@ function AuthPage({ mode }: { mode: AuthMode }) {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setNotice('');
 
     if (!validate()) {
       return;
@@ -3435,6 +3420,20 @@ function AuthPage({ mode }: { mode: AuthMode }) {
     setIsSubmitting(true);
     window.setTimeout(() => {
       try {
+        if (isForgot) {
+          const requestedEmail = email.trim().toLowerCase();
+          const userExists = getStoredUsers().some((user) => user.email === requestedEmail);
+
+          setNotice(
+            userExists
+              ? 'Reset instructions are ready for this demo account. In production this will be sent by email.'
+              : 'If this email is connected to a GGBOX account, reset instructions will be sent there.',
+          );
+          trackEvent('password_reset_requested', { method: 'email' });
+          setIsSubmitting(false);
+          return;
+        }
+
         if (isRegister) {
           registerUser(name, email, password);
           trackEvent('signup_completed', { method: 'email' });
@@ -3447,9 +3446,11 @@ function AuthPage({ mode }: { mode: AuthMode }) {
       } catch (error) {
         setErrors({
           form:
-            error instanceof Error && error.message === 'User already exists'
+            isRegister && error instanceof Error && error.message === 'User already exists'
               ? 'This email is already registered. Sign in instead.'
-              : 'Email or password is incorrect.',
+              : isRegister
+                ? 'Account could not be created. Check the fields and try again.'
+                : 'Email or password is incorrect.',
         });
         setIsSubmitting(false);
       }
@@ -3464,6 +3465,20 @@ function AuthPage({ mode }: { mode: AuthMode }) {
       completeAuth();
     }, 260);
   };
+
+  const pageTitle = isForgot ? 'Reset Access' : isRegister ? 'Create Account' : 'Sign In';
+  const formTitle = isForgot ? 'Reset password' : isRegister ? 'Create account' : 'Sign in';
+  const intro =
+    isForgot
+      ? 'Enter the email connected to your GGBOX vault. We will prepare reset instructions for your collector account.'
+      : isRegister
+        ? 'Create a collector vault for buying drops, opening packs, and keeping your GGBOX moments in one place.'
+        : 'Access your GGBOX vault to manage balance, sealed packs, owned moments, and active market listings.';
+  const authHighlights = [
+    ['Wallet', '$500 demo balance'],
+    ['Drops', 'Buy packs and open moments'],
+    ['Market', 'List or collect moments'],
+  ] as const;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#03060a] px-4 py-6 text-white sm:px-8" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -3486,21 +3501,14 @@ function AuthPage({ mode }: { mode: AuthMode }) {
 
       <section className="relative z-10 mx-auto grid min-h-[calc(100svh-5rem)] w-full max-w-6xl items-center gap-10 py-14 lg:grid-cols-[minmax(0,0.94fr)_430px]">
         <div className="min-w-0">
-          <div className="inline-flex items-center gap-2 border border-[#54b9ff]/38 bg-[#54b9ff]/10 px-4 py-2 text-xs font-black uppercase text-[#54b9ff]" style={{ borderRadius: 999, letterSpacing: '0.14em' }}>
-            <ShieldCheck size={16} /> Collector Access
-          </div>
-          <h1 className="mt-7 max-w-full text-[44px] uppercase leading-none text-white sm:text-[104px]" style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0' }}>
-            {isRegister ? 'Create Account' : 'Sign In'}
+          <h1 className="max-w-full text-[44px] uppercase leading-none text-white sm:text-[104px]" style={{ fontFamily: "'Anton', sans-serif", letterSpacing: '0' }}>
+            {pageTitle}
           </h1>
           <p className="mt-5 max-w-2xl text-base font-semibold leading-7 text-white/62 sm:text-lg sm:leading-8">
-            Build your GGBOX collection, keep sealed packs, open drops, and track every creator moment you own.
+            {intro}
           </p>
           <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
-            {[
-              ['Vault', 'Local demo session'],
-              ['Collection', 'Moments and packs'],
-              ['Market', 'Purchases saved'],
-            ].map(([label, value]) => (
+            {authHighlights.map(([label, value]) => (
               <div key={label} className="border border-white/10 bg-black/28 p-4" style={{ borderRadius: 8 }}>
                 <div className="text-[10px] font-black uppercase text-white/42" style={{ letterSpacing: '0.12em' }}>{label}</div>
                 <div className="mt-2 text-sm font-black text-white">{value}</div>
@@ -3516,8 +3524,7 @@ function AuthPage({ mode }: { mode: AuthMode }) {
         >
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-xs font-black uppercase text-[#54b9ff]" style={{ letterSpacing: '0.14em' }}>{isRegister ? 'New collector' : 'Returning collector'}</div>
-              <h2 className="mt-2 text-2xl font-black text-white">{isRegister ? 'Register' : 'Login'}</h2>
+              <h2 className="text-2xl font-black text-white">{formTitle}</h2>
             </div>
             <UserCircle size={34} className="text-white/72" />
           </div>
@@ -3553,38 +3560,41 @@ function AuthPage({ mode }: { mode: AuthMode }) {
               {errors.email ? <span className="text-sm font-semibold text-[#ff5a6f]">{errors.email}</span> : null}
             </label>
 
-            <label className="grid gap-2">
-              <span className="text-xs font-black uppercase text-white/68" style={{ letterSpacing: '0.12em' }}>Password</span>
-              <div className="relative">
-                <LockKeyhole size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/38" />
-                <input
-                  value={password}
-                  onChange={(event) => setPassword(event.currentTarget.value)}
-                  className="h-12 w-full border border-white/14 bg-white/[0.06] pl-11 pr-12 text-white outline-none transition-colors focus:border-[#54b9ff]"
-                  style={{ borderRadius: 8 }}
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete={isRegister ? 'new-password' : 'current-password'}
-                />
-                <button
-                  type="button"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  onClick={() => setShowPassword((shown) => !shown)}
-                  className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-white/54 transition-colors hover:text-white"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              {errors.password ? <span className="text-sm font-semibold text-[#ff5a6f]">{errors.password}</span> : null}
-            </label>
+            {!isForgot ? (
+              <label className="grid gap-2">
+                <span className="text-xs font-black uppercase text-white/68" style={{ letterSpacing: '0.12em' }}>Password</span>
+                <div className="relative">
+                  <LockKeyhole size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/38" />
+                  <input
+                    value={password}
+                    onChange={(event) => setPassword(event.currentTarget.value)}
+                    className="h-12 w-full border border-white/14 bg-white/[0.06] pl-11 pr-12 text-white outline-none transition-colors focus:border-[#54b9ff]"
+                    style={{ borderRadius: 8 }}
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete={isRegister ? 'new-password' : 'current-password'}
+                  />
+                  <button
+                    type="button"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowPassword((shown) => !shown)}
+                    className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-white/54 transition-colors hover:text-white"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password ? <span className="text-sm font-semibold text-[#ff5a6f]">{errors.password}</span> : null}
+              </label>
+            ) : null}
           </div>
 
-          {!isRegister ? (
-            <a href="/register" className="mt-3 inline-flex text-sm font-bold text-[#54b9ff] no-underline hover:text-white">
+          {!isRegister && !isForgot ? (
+            <a href="/forgot-password" className="mt-3 inline-flex text-sm font-bold text-[#54b9ff] no-underline hover:text-white">
               Forgot password?
             </a>
           ) : null}
 
           {errors.form ? <div className="mt-4 border border-[#ff5a6f]/36 bg-[#ff5a6f]/10 px-3 py-2 text-sm font-semibold text-[#ff8a9a]" style={{ borderRadius: 8 }}>{errors.form}</div> : null}
+          {notice ? <div className="mt-4 border border-[#54b9ff]/34 bg-[#54b9ff]/10 px-3 py-2 text-sm font-semibold text-[#8fd2ff]" style={{ borderRadius: 8 }}>{notice}</div> : null}
 
           <button
             type="submit"
@@ -3593,34 +3603,38 @@ function AuthPage({ mode }: { mode: AuthMode }) {
             style={{ borderRadius: 8, letterSpacing: '0.14em', boxShadow: BUY_BUTTON_SHADOW }}
           >
             {isSubmitting ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" /> : <CheckCircle2 size={18} />}
-            {isRegister ? 'Create Account' : 'Sign In'}
+            {isForgot ? 'Send Reset Link' : isRegister ? 'Create Account' : 'Sign In'}
           </button>
 
-          <div className="my-5 h-px bg-white/10" />
+          {!isForgot ? (
+            <>
+              <div className="my-5 h-px bg-white/10" />
 
-          <div className="grid gap-3">
-            <button
-              type="button"
-              onClick={() => handleProvider('google')}
-              className="flex h-12 items-center justify-center gap-3 border border-white/14 bg-white/[0.06] text-sm font-black text-white transition-colors hover:bg-white/[0.10]"
-              style={{ borderRadius: 8 }}
-            >
-              <GoogleMark /> Continue with Google
-            </button>
-            <button
-              type="button"
-              onClick={() => handleProvider('discord')}
-              className="flex h-12 items-center justify-center gap-3 border border-white/14 bg-white/[0.06] text-sm font-black text-white transition-colors hover:bg-white/[0.10]"
-              style={{ borderRadius: 8 }}
-            >
-              <DiscordMark /> Continue with Discord
-            </button>
-          </div>
+              <div className="grid gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleProvider('google')}
+                  className="flex h-12 items-center justify-center gap-3 border border-white/14 bg-white/[0.06] text-sm font-black text-white transition-colors hover:bg-white/[0.10]"
+                  style={{ borderRadius: 8 }}
+                >
+                  <GoogleMark /> Continue with Google
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleProvider('discord')}
+                  className="flex h-12 items-center justify-center gap-3 border border-white/14 bg-white/[0.06] text-sm font-black text-white transition-colors hover:bg-white/[0.10]"
+                  style={{ borderRadius: 8 }}
+                >
+                  <DiscordMark /> Continue with Discord
+                </button>
+              </div>
+            </>
+          ) : null}
 
           <div className="mt-5 text-center text-sm font-semibold text-white/58">
-            {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <a href={isRegister ? '/login' : '/register'} className="font-black text-[#54b9ff] no-underline hover:text-white">
-              {isRegister ? 'Sign in' : 'Register'}
+            {isForgot ? 'Remembered your password?' : isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <a href={isForgot || isRegister ? '/login' : '/register'} className="font-black text-[#54b9ff] no-underline hover:text-white">
+              {isForgot || isRegister ? 'Sign in' : 'Register'}
             </a>
           </div>
         </form>
@@ -5008,6 +5022,10 @@ export default function App() {
 
   if (currentPath === '/register') {
     return <AuthPage mode="register" />;
+  }
+
+  if (currentPath === '/forgot-password') {
+    return <AuthPage mode="forgot" />;
   }
 
   if (currentPath === '/account') {
